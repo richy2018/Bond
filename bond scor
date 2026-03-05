@@ -1,0 +1,343 @@
+import { useState, useMemo } from "react";
+
+const RAW_DATA = [
+  { issuer: "Abertis France SAS", isin: "XS2433135543", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 92.256, gSpread: 86.75, ebitdaInterest: 11.12, debtEquity: 551, netDebtEbitda: 3.44, defaultProb: 0.5108, yieldAsk: 3.220, paymentRank: "Sr Unsecured", maturity: "2031-01-18", fcfDebt: 0.186233173, interestCoverage: 7.756071748 },
+  { issuer: "Abertis France SAS", isin: "XS2577384691", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 103.859, gSpread: 89.47, ebitdaInterest: 11.12, debtEquity: 551, netDebtEbitda: 3.44, defaultProb: 0.5108, yieldAsk: 3.212, paymentRank: "Sr Unsecured", maturity: "2030-03-18", fcfDebt: 0.186233173, interestCoverage: 7.756071748 },
+  { issuer: "Abertis Infraestructuras SA", isin: "XS1967636199", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 98.821, gSpread: 88.77, ebitdaInterest: 3.23, debtEquity: 680, netDebtEbitda: 5.44, defaultProb: 1.4241, yieldAsk: 3.256, paymentRank: "Sr Unsecured", maturity: "2031-03-27", fcfDebt: 0.077374423, interestCoverage: 1.223557411 },
+  { issuer: "Abertis Infraestructuras SA", isin: "XS3111813948", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 99.763, gSpread: 87.49, ebitdaInterest: 3.23, debtEquity: 680, netDebtEbitda: 5.44, defaultProb: 1.4241, yieldAsk: 3.182, paymentRank: "Sr Unsecured", maturity: "2030-07-07", fcfDebt: 0.077374423, interestCoverage: 1.223557411 },
+  { issuer: "Abertis Infraestructuras SA", isin: "XS2055652056", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 91.82, gSpread: 95.61, ebitdaInterest: 3.23, debtEquity: 680, netDebtEbitda: 5.44, defaultProb: 1.4241, yieldAsk: 3.394, paymentRank: "Sr Unsecured", maturity: "2032-03-26", fcfDebt: 0.077374423, interestCoverage: 1.223557411 },
+  { issuer: "Acciona Energia", isin: "XS2436160183", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 88.14, gSpread: 124.49, ebitdaInterest: 6.51, debtEquity: 76, netDebtEbitda: 2.50, defaultProb: 0.0907, yieldAsk: 3.650, paymentRank: "Sr Unsecured", maturity: "2032-01-26", fcfDebt: -0.134994337, interestCoverage: 4.021097046 },
+  { issuer: "Acciona Energia", isin: "XS2698998593", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 106.627, gSpread: 127.56, ebitdaInterest: 6.51, debtEquity: 76, netDebtEbitda: 2.50, defaultProb: 0.0907, yieldAsk: 3.680, paymentRank: "Sr Unsecured", maturity: "2031-04-23", fcfDebt: -0.134994337, interestCoverage: 4.021097046 },
+  { issuer: "Acciona Energia", isin: "XS2610209129", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 101.222, gSpread: 112.67, ebitdaInterest: 6.51, debtEquity: 76, netDebtEbitda: 2.50, defaultProb: 0.0907, yieldAsk: 3.426, paymentRank: "Sr Unsecured", maturity: "2030-04-25", fcfDebt: -0.134994337, interestCoverage: 4.021097046 },
+  { issuer: "ASTM SpA", isin: "XS2412267515", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 94.421, gSpread: 76.76, ebitdaInterest: 2.70, debtEquity: 846, netDebtEbitda: 4.64, defaultProb: 1.4073, yieldAsk: 3.045, paymentRank: "Sr Unsecured", maturity: "2030-01-25", fcfDebt: -0.061072336, interestCoverage: 1.363494461 },
+  { issuer: "ASTM SpA", isin: "XS2412267788", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 90.586, gSpread: 121.89, ebitdaInterest: 2.70, debtEquity: 846, netDebtEbitda: 4.64, defaultProb: 1.4073, yieldAsk: 3.805, paymentRank: "Sr Unsecured", maturity: "2033-11-25", fcfDebt: -0.061072336, interestCoverage: 1.363494461 },
+  { issuer: "ASTM SpA", isin: "XS3203027654", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 98.827, gSpread: 115.82, ebitdaInterest: 2.70, debtEquity: 846, netDebtEbitda: 4.64, defaultProb: 1.4073, yieldAsk: 3.590, paymentRank: "Sr Unsecured", maturity: "2032-02-16", fcfDebt: -0.061072336, interestCoverage: 1.363494461 },
+  { issuer: "Bulgarian Energy Holding", isin: "XS3090933485", industry: "UTILITY - ELEC", rating: "BB", askPrice: 99.975, gSpread: 196.85, ebitdaInterest: 8.36, debtEquity: 17, netDebtEbitda: 0.50, defaultProb: 0.5410, yieldAsk: 4.252, paymentRank: "Sr Unsecured", maturity: "2030-06-19", fcfDebt: -0.022298883, interestCoverage: 2.745573238 },
+  { issuer: "Cellnex Finance Co SA", isin: "XS2300293003", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 90.249, gSpread: 109.40, ebitdaInterest: 5.32, debtEquity: 181, netDebtEbitda: 6.48, defaultProb: 0.0604, yieldAsk: 3.613, paymentRank: "Sr Unsecured", maturity: "2033-02-15", fcfDebt: null, interestCoverage: 0.803848596 },
+  { issuer: "Cellnex Finance Co SA", isin: "XS2385393587", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 91.182, gSpread: 105.45, ebitdaInterest: 5.32, debtEquity: 181, netDebtEbitda: 6.48, defaultProb: 0.0604, yieldAsk: 3.536, paymentRank: "Sr Unsecured", maturity: "2032-09-15", fcfDebt: null, interestCoverage: 0.803848596 },
+  { issuer: "Cellnex Finance Co SA", isin: "XS3267907965", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 98.941, gSpread: 86.32, ebitdaInterest: 5.32, debtEquity: 181, netDebtEbitda: 6.48, defaultProb: 0.0604, yieldAsk: 3.237, paymentRank: "Sr Unsecured", maturity: "2031-01-19", fcfDebt: null, interestCoverage: 0.803848596 },
+  { issuer: "Cellnex Finance Co SA", isin: "XS3019300469", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 100.157, gSpread: 102.35, ebitdaInterest: 5.32, debtEquity: 181, netDebtEbitda: 6.48, defaultProb: 0.0604, yieldAsk: 3.470, paymentRank: "Sr Unsecured", maturity: "2032-05-22", fcfDebt: null, interestCoverage: 0.803848596 },
+  { issuer: "Cellnex Telecom SA", isin: "XS2247549731", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 94.043, gSpread: 81.55, ebitdaInterest: 5.32, debtEquity: 181, netDebtEbitda: 6.48, defaultProb: 0.0604, yieldAsk: 3.153, paymentRank: "Sr Unsecured", maturity: "2030-10-23", fcfDebt: null, interestCoverage: 0.803848596 },
+  { issuer: "Czechoslovak Group AS", isin: "XS3105190576", industry: "INDUSTRIAL", rating: "BB+", askPrice: 104.787, gSpread: 149.95, ebitdaInterest: 2.85, debtEquity: 247, netDebtEbitda: 1.48, defaultProb: 0.4111, yieldAsk: 4.146, paymentRank: "Secured", maturity: "2031-01-10", fcfDebt: 0.266965391, interestCoverage: 2.677178487 },
+  { issuer: "Czechoslovak Group AS", isin: "XS3105190816", industry: "INDUSTRIAL", rating: "BB+", askPrice: 104.841, gSpread: 145.18, ebitdaInterest: 2.85, debtEquity: 247, netDebtEbitda: 1.48, defaultProb: 0.4111, yieldAsk: 4.134, paymentRank: "Secured", maturity: "2031-01-10", fcfDebt: 0.266965391, interestCoverage: 2.677178487 },
+  { issuer: "Digi Romania SA", isin: "XS3216643851", industry: "INDUSTRIAL", rating: "BB", askPrice: 100.674, gSpread: 230.24, ebitdaInterest: 15.66, debtEquity: 174, netDebtEbitda: 2.82, defaultProb: 0.0203, yieldAsk: 4.487, paymentRank: "Secured", maturity: "2031-10-29", fcfDebt: -0.070594091, interestCoverage: 8.707088084 },
+  { issuer: "Digi Romania SA", isin: "XS3216614084", industry: "INDUSTRIAL", rating: "BB", askPrice: 100.713, gSpread: 231.07, ebitdaInterest: 15.66, debtEquity: 174, netDebtEbitda: 2.82, defaultProb: 0.0203, yieldAsk: 4.479, paymentRank: "Secured", maturity: "2031-10-29", fcfDebt: -0.070594091, interestCoverage: 8.707088084 },
+  { issuer: "EP Infrastructure AS", isin: "XS2304675791", industry: "SPECIAL PURPOSE", rating: "BBB-", askPrice: 91.631, gSpread: 136.33, ebitdaInterest: 13.65, debtEquity: 161, netDebtEbitda: 1.56, defaultProb: 0.2886, yieldAsk: 3.686, paymentRank: "Sr Unsecured", maturity: "2031-03-02", fcfDebt: 0.223428759, interestCoverage: 9.287128713 },
+  { issuer: "EP Infrastructure AS", isin: "XS3239976163", industry: "SPECIAL PURPOSE", rating: "BBB-", askPrice: 99.588, gSpread: 167.05, ebitdaInterest: 13.65, debtEquity: 161, netDebtEbitda: 1.56, defaultProb: 0.2886, yieldAsk: 4.194, paymentRank: "Sr Unsecured", maturity: "2033-02-27", fcfDebt: 0.223428759, interestCoverage: 9.287128713 },
+  { issuer: "EP Infrastructure AS", isin: "XS3281145691", industry: "SPECIAL PURPOSE", rating: "BBB-", askPrice: 100.323, gSpread: 170.77, ebitdaInterest: 13.65, debtEquity: 161, netDebtEbitda: 1.56, defaultProb: 0.2886, yieldAsk: 4.324, paymentRank: "Sr Unsecured", maturity: "2034-01-29", fcfDebt: 0.223428759, interestCoverage: 9.287128713 },
+  { issuer: "EPH Financing International", isin: "XS3106539938", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 102.882, gSpread: 164.45, ebitdaInterest: 6.91, debtEquity: 198, netDebtEbitda: 0.74, defaultProb: 0.9037, yieldAsk: 4.094, paymentRank: "Sr Unsecured", maturity: "2032-07-02", fcfDebt: 0.371278459, interestCoverage: 4.609756098 },
+  { issuer: "FCC Aqualia SA", isin: "XS3089767183", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 101.047, gSpread: 110.78, ebitdaInterest: 6.09, debtEquity: 251, netDebtEbitda: 4.48, defaultProb: 0.6958, yieldAsk: 3.558, paymentRank: "Sr Unsecured", maturity: "2032-06-11", fcfDebt: 0.022730031, interestCoverage: 3.433300724 },
+  { issuer: "GXO Logistics Capital BV", isin: "XS3238162716", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 100.477, gSpread: 129.94, ebitdaInterest: 6.15, debtEquity: 172, netDebtEbitda: 7.52, defaultProb: 3.6633, yieldAsk: 3.635, paymentRank: "Sr Unsecured", maturity: "2030-11-24", fcfDebt: 0.035162287, interestCoverage: 2.116504854 },
+  { issuer: "HIME SAS", isin: "XS3191437006", industry: "INDUSTRIAL", rating: "BB+", askPrice: 99.884, gSpread: 158.26, ebitdaInterest: 4.85, debtEquity: 185, netDebtEbitda: 6.99, defaultProb: 1.2831, yieldAsk: 3.900, paymentRank: "Sr Unsecured", maturity: "2031-01-31", fcfDebt: -0.08874693, interestCoverage: 0.17156056 },
+  { issuer: "iliad SA", isin: "FR0014012IH7", industry: "TELEPHONE", rating: "BB", askPrice: 101.77, gSpread: 150.22, ebitdaInterest: 5.68, debtEquity: 343, netDebtEbitda: 2.83, defaultProb: 1.1944, yieldAsk: 3.894, paymentRank: "Sr Unsecured", maturity: "2032-01-09", fcfDebt: 0.109544015, interestCoverage: 1.932844933 },
+  { issuer: "iliad SA", isin: "FR001400PRQ7", industry: "TELEPHONE", rating: "BB", askPrice: 107.79, gSpread: 129.07, ebitdaInterest: 5.68, debtEquity: 343, netDebtEbitda: 2.83, defaultProb: 1.1944, yieldAsk: 3.683, paymentRank: "Sr Unsecured", maturity: "2031-05-02", fcfDebt: 0.109544015, interestCoverage: 1.932844933 },
+  { issuer: "iliad SA", isin: "FR001400FV85", industry: "TELEPHONE", rating: "BB", askPrice: 107.614, gSpread: 117.71, ebitdaInterest: 5.68, debtEquity: 343, netDebtEbitda: 2.83, defaultProb: 1.1944, yieldAsk: 3.520, paymentRank: "Sr Unsecured", maturity: "2030-02-15", fcfDebt: 0.109544015, interestCoverage: 1.932844933 },
+  { issuer: "Infrastrutture Wireless Italiane", isin: "XS2332687040", industry: "INDUSTRIAL", rating: "BB+", askPrice: 94.4, gSpread: 57.51, ebitdaInterest: 11.55, debtEquity: 114, netDebtEbitda: 5.15, defaultProb: 0.0053, yieldAsk: 2.945, paymentRank: "Sr Unsecured", maturity: "2031-04-19", fcfDebt: 0.10346641, interestCoverage: 6.858219119 },
+  { issuer: "Infrastrutture Wireless Italiane", isin: "XS3201918318", industry: "INDUSTRIAL", rating: "BB+", askPrice: 99.583, gSpread: 120.53, ebitdaInterest: 11.55, debtEquity: 114, netDebtEbitda: 5.15, defaultProb: 0.0053, yieldAsk: 3.695, paymentRank: "Sr Unsecured", maturity: "2032-10-13", fcfDebt: 0.10346641, interestCoverage: 6.858219119 },
+  { issuer: "Infrastrutture Wireless Italiane", isin: "XS3040316971", industry: "INDUSTRIAL", rating: "BB+", askPrice: 101.599, gSpread: 103.21, ebitdaInterest: 11.55, debtEquity: 114, netDebtEbitda: 5.15, defaultProb: 0.0053, yieldAsk: 3.322, paymentRank: "Sr Unsecured", maturity: "2030-04-01", fcfDebt: 0.10346641, interestCoverage: 6.858219119 },
+  { issuer: "InPost SA", isin: "XS3176794678", industry: "INDUSTRIAL", rating: "BB+", askPrice: 98.96, gSpread: 202.69, ebitdaInterest: 9.43, debtEquity: 316, netDebtEbitda: 2.25, defaultProb: 0.1267, yieldAsk: 4.230, paymentRank: "Sr Unsecured", maturity: "2031-04-01", fcfDebt: 0.173321198, interestCoverage: 5.355191257 },
+  { issuer: "InPost SA", isin: "XS3176794595", industry: "INDUSTRIAL", rating: "BB+", askPrice: 98.798, gSpread: 204.01, ebitdaInterest: 9.43, debtEquity: 316, netDebtEbitda: 2.25, defaultProb: 0.1267, yieldAsk: 4.266, paymentRank: "Sr Unsecured", maturity: "2031-04-01", fcfDebt: 0.173321198, interestCoverage: 5.355191257 },
+  { issuer: "IPSOS SA", isin: "FR001400WRF6", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 101.185, gSpread: 114.26, ebitdaInterest: 16.10, debtEquity: 43, netDebtEbitda: 1.04, defaultProb: 0.0176, yieldAsk: 3.416, paymentRank: "Sr Unsecured", maturity: "2030-01-22", fcfDebt: null, interestCoverage: 11.80827259 },
+  { issuer: "ITV PLC", isin: "XS2838391170", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 102.928, gSpread: 133.06, ebitdaInterest: 23.09, debtEquity: 46, netDebtEbitda: 1.31, defaultProb: 0.0091, yieldAsk: 3.716, paymentRank: "Sr Unsecured", maturity: "2032-06-19", fcfDebt: 0.435034803, interestCoverage: 14.45454545 },
+  { issuer: "JCDecaux SE", isin: "FR00140082Z6", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 94.384, gSpread: 91.04, ebitdaInterest: 7.87, debtEquity: 200, netDebtEbitda: 2.35, defaultProb: 0.0411, yieldAsk: 3.171, paymentRank: "Sr Unsecured", maturity: "2030-02-07", fcfDebt: 0.190852084, interestCoverage: 2.693093093 },
+  { issuer: "Metlen Energy & Metals SA", isin: "XS3238225224", industry: "INDUSTRIAL", rating: "BB+", askPrice: 99.712, gSpread: 158.51, ebitdaInterest: 8.17, debtEquity: 142, netDebtEbitda: 2.98, defaultProb: 0.6432, yieldAsk: 3.938, paymentRank: "Sr Unsecured", maturity: "2031-05-26", fcfDebt: -0.097410521, interestCoverage: 6.918162207 },
+  { issuer: "Orsted AS", isin: "XS2490472102", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 95.182, gSpread: 109.09, ebitdaInterest: 2.91, debtEquity: 90, netDebtEbitda: 0.75, defaultProb: 0.1790, yieldAsk: 3.640, paymentRank: "Sr Unsecured", maturity: "2033-06-14", fcfDebt: -0.286991109, interestCoverage: 1.342676729 },
+  { issuer: "Orsted AS", isin: "XS2531569965", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 99.534, gSpread: 93.00, ebitdaInterest: 2.91, debtEquity: 90, netDebtEbitda: 0.75, defaultProb: 0.1790, yieldAsk: 3.341, paymentRank: "Sr Unsecured", maturity: "2031-09-13", fcfDebt: -0.286991109, interestCoverage: 1.342676729 },
+  { issuer: "Orsted AS", isin: "XS2591029876", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 102.006, gSpread: 90.90, ebitdaInterest: 2.91, debtEquity: 90, netDebtEbitda: 0.75, defaultProb: 0.1790, yieldAsk: 3.205, paymentRank: "Sr Unsecured", maturity: "2030-03-01", fcfDebt: -0.286991109, interestCoverage: 1.342676729 },
+  { issuer: "Rexel SA", isin: "XS3146987543", industry: "INDUSTRIAL", rating: "BB+", askPrice: 101.948, gSpread: 122.30, ebitdaInterest: 7.30, debtEquity: 95, netDebtEbitda: 2.72, defaultProb: 0.0262, yieldAsk: 3.529, paymentRank: "Sr Unsecured", maturity: "2030-09-15", fcfDebt: 0.127168195, interestCoverage: 5.170969313 },
+  { issuer: "Rexel SA", isin: "XS2655993033", industry: "INDUSTRIAL", rating: "BB+", askPrice: 103.778, gSpread: 136.07, ebitdaInterest: 7.30, debtEquity: 95, netDebtEbitda: 2.72, defaultProb: 0.0262, yieldAsk: 4.320, paymentRank: "Sr Unsecured", maturity: "2030-09-15", fcfDebt: 0.127168195, interestCoverage: 5.170969313 },
+  { issuer: "Seche Environnement", isin: "XS2895496680", industry: "INDUSTRIAL", rating: "BB", askPrice: 102.313, gSpread: 159.10, ebitdaInterest: 6.28, debtEquity: 279, netDebtEbitda: 2.61, defaultProb: 0.6638, yieldAsk: 3.877, paymentRank: "Sr Unsecured", maturity: "2030-03-25", fcfDebt: 0.100863204, interestCoverage: 2.843061281 },
+  { issuer: "SES SA", isin: "XS3100767915", industry: "TELEPHONE", rating: "BB+", askPrice: 100.855, gSpread: 160.59, ebitdaInterest: 6.05, debtEquity: 265, netDebtEbitda: 5.64, defaultProb: 0.8829, yieldAsk: 3.901, paymentRank: "Sr Unsecured", maturity: "2030-06-24", fcfDebt: -0.174207493, interestCoverage: 0.372093023 },
+  { issuer: "SES SA", isin: "XS3100773996", industry: "TELEPHONE", rating: "BB+", askPrice: 101.753, gSpread: 213.80, ebitdaInterest: 6.05, debtEquity: 265, netDebtEbitda: 5.64, defaultProb: 0.8829, yieldAsk: 4.583, paymentRank: "Sr Unsecured", maturity: "2033-06-24", fcfDebt: -0.174207493, interestCoverage: 0.372093023 },
+  { issuer: "SPIE SA", isin: "FR001400ZYD0", industry: "INDUSTRIAL", rating: "BB+", askPrice: 101.632, gSpread: 105.37, ebitdaInterest: 8.77, debtEquity: 134, netDebtEbitda: 2.44, defaultProb: 0.0042, yieldAsk: 3.326, paymentRank: "Sr Unsecured", maturity: "2030-05-28", fcfDebt: 0.324542736, interestCoverage: 5.285217743 },
+  { issuer: "Telecom Italia Finance", isin: "XS0161100515", industry: "TELEPHONE", rating: "BB", askPrice: 124.999, gSpread: 117.02, ebitdaInterest: 1.60, debtEquity: 17, netDebtEbitda: -0.96, defaultProb: 0.6648, yieldAsk: 3.583, paymentRank: "Sr Unsecured", maturity: "2033-01-24", fcfDebt: 0.138723571, interestCoverage: null },
+  { issuer: "Telecom Italia SpA", isin: "XS3194057553", industry: "TELEPHONE", rating: "BB", askPrice: 101.087, gSpread: 106.62, ebitdaInterest: 3.50, debtEquity: 128, netDebtEbitda: 2.60, defaultProb: 0.0699, yieldAsk: 3.360, paymentRank: "Sr Unsecured", maturity: "2030-09-30", fcfDebt: 0.059883919, interestCoverage: 1.141906874 },
+  { issuer: "Telefonica Europe BV", isin: "XS0162869076", industry: "TELEPHONE", rating: "BBB-", askPrice: 114.903, gSpread: 90.92, ebitdaInterest: 4.82, debtEquity: 591, netDebtEbitda: 3.74, defaultProb: 0.0594, yieldAsk: 3.424, paymentRank: "Sr Unsecured", maturity: "2033-02-14", fcfDebt: 0.117696013, interestCoverage: 0.731964484 },
+  { issuer: "Teollisuuden Voima Oyj", isin: "XS3176713934", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 100.171, gSpread: 106.47, ebitdaInterest: 1.81, debtEquity: 234, netDebtEbitda: 11.60, defaultProb: 0.8924, yieldAsk: 3.597, paymentRank: "Sr Unsecured", maturity: "2033-03-18", fcfDebt: null, interestCoverage: 0.706567988 },
+  { issuer: "Teollisuuden Voima Oyj", isin: "XS2823931824", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 104.678, gSpread: 84.26, ebitdaInterest: 1.81, debtEquity: 234, netDebtEbitda: 11.60, defaultProb: 0.8924, yieldAsk: 3.256, paymentRank: "Sr Unsecured", maturity: "2031-05-22", fcfDebt: null, interestCoverage: 0.706567988 },
+  { issuer: "Teollisuuden Voima Oyj", isin: "XS2625194225", industry: "UTILITY - ELEC", rating: "BBB-", askPrice: 106.19, gSpread: 78.28, ebitdaInterest: 1.81, debtEquity: 234, netDebtEbitda: 11.60, defaultProb: 0.8924, yieldAsk: 3.160, paymentRank: "Sr Unsecured", maturity: "2030-06-01", fcfDebt: null, interestCoverage: 0.706567988 },
+  { issuer: "Timken Co/The", isin: "XS2824606532", industry: "INDUSTRIAL", rating: "BBB-", askPrice: 101.746, gSpread: 133.88, ebitdaInterest: 7.37, debtEquity: 65, netDebtEbitda: 2.19, defaultProb: 0.0120, yieldAsk: 3.871, paymentRank: "Sr Unsecured", maturity: "2034-05-23", fcfDebt: 0.197529063, interestCoverage: 4.901178604 },
+  { issuer: "Webuild SpA", isin: "XS3106096178", industry: "INDUSTRIAL", rating: "BB+", askPrice: 102.062, gSpread: 132.00, ebitdaInterest: 5.70, debtEquity: 172, netDebtEbitda: 0.65, defaultProb: 0.1789, yieldAsk: 3.687, paymentRank: "Sr Unsecured", maturity: "2031-07-03", fcfDebt: -0.276079544, interestCoverage: 3.219168884 },
+  { issuer: "Webuild SpA", isin: "XS2922654418", industry: "INDUSTRIAL", rating: "BB+", askPrice: 105.131, gSpread: 112.94, ebitdaInterest: 5.70, debtEquity: 172, netDebtEbitda: 0.65, defaultProb: 0.1789, yieldAsk: 3.520, paymentRank: "Sr Unsecured", maturity: "2030-04-30", fcfDebt: -0.276079544, interestCoverage: 3.219168884 },
+];
+
+const DEFAULT_WEIGHTS = {
+  defaultProb: 25,
+  interestCoverage: 20,
+  netDebtEbitda: 20,
+  gSpread: 15,
+  fcfDebt: 10,
+  ebitdaInterest: 10,
+};
+
+const METRIC_INFO = {
+  defaultProb: { label: "Default Probability", direction: "lower_better", description: "1-yr issuer default probability (%)" },
+  interestCoverage: { label: "Interest Coverage", direction: "higher_better", description: "EBITDA / Interest Expense" },
+  netDebtEbitda: { label: "Net Debt / EBITDA", direction: "lower_better", description: "Leverage ratio" },
+  gSpread: { label: "G-Spread", direction: "higher_better", description: "Spread over govt bonds (bps) — reward for risk" },
+  fcfDebt: { label: "FCF / Total Debt", direction: "higher_better", description: "Free cash flow as % of total debt" },
+  ebitdaInterest: { label: "EBITDA / Interest", direction: "higher_better", description: "EBITDA to interest expense coverage" },
+};
+
+function normalize(values, direction) {
+  const valid = values.filter(v => v !== null && !isNaN(v));
+  const min = Math.min(...valid);
+  const max = Math.max(...valid);
+  if (max === min) return values.map(v => (v === null ? null : 0.5));
+  return values.map(v => {
+    if (v === null || isNaN(v)) return null;
+    const raw = (v - min) / (max - min);
+    return direction === "lower_better" ? 1 - raw : raw;
+  });
+}
+
+export default function BondScorer() {
+  const [weights, setWeights] = useState(DEFAULT_WEIGHTS);
+  const [sortBy, setSortBy] = useState("score");
+  const [filterRating, setFilterRating] = useState("ALL");
+  const [showTop, setShowTop] = useState(10);
+
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+
+  const scored = useMemo(() => {
+    const metrics = Object.keys(METRIC_INFO);
+    const normalized = {};
+    metrics.forEach(m => {
+      normalized[m] = normalize(RAW_DATA.map(b => b[m]), METRIC_INFO[m].direction);
+    });
+
+    return RAW_DATA.map((bond, i) => {
+      let score = 0;
+      let usedWeight = 0;
+      metrics.forEach(m => {
+        const norm = normalized[m][i];
+        if (norm !== null) {
+          score += (weights[m] / 100) * norm * 100;
+          usedWeight += weights[m];
+        }
+      });
+      const adjustedScore = usedWeight > 0 ? (score / usedWeight) * 100 : 0;
+      return { ...bond, score: adjustedScore, normalizedMetrics: metrics.reduce((acc, m) => ({ ...acc, [m]: normalized[m][i] }), {}) };
+    });
+  }, [weights]);
+
+  const filtered = useMemo(() => {
+    let data = filterRating === "ALL" ? scored : scored.filter(b => b.rating === filterRating);
+    return [...data].sort((a, b) => {
+      if (sortBy === "score") return b.score - a.score;
+      if (sortBy === "gSpread") return b.gSpread - a.gSpread;
+      if (sortBy === "defaultProb") return a.defaultProb - b.defaultProb;
+      if (sortBy === "yieldAsk") return b.yieldAsk - a.yieldAsk;
+      return 0;
+    });
+  }, [scored, sortBy, filterRating]);
+
+  const displayed = filtered.slice(0, showTop);
+  const top = filtered[0];
+
+  const getScoreColor = (score) => {
+    if (score >= 65) return "#00e5a0";
+    if (score >= 50) return "#f5c518";
+    if (score >= 35) return "#ff8c42";
+    return "#ff4444";
+  };
+
+  const getBarWidth = (val, max) => `${Math.max(2, (val / max) * 100)}%`;
+
+  return (
+    <div style={{ fontFamily: "'IBM Plex Mono', 'Courier New', monospace", background: "#0a0e1a", minHeight: "100vh", color: "#c8d6e5", padding: "0" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0e1a; }
+        ::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
+        input[type=range] { -webkit-appearance: none; height: 3px; border-radius: 2px; outline: none; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #00e5a0; cursor: pointer; }
+        .bond-row:hover { background: #0d1829 !important; }
+        .pill { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; }
+        .tag-bbb { background: #1a3a2a; color: #00e5a0; border: 1px solid #00e5a033; }
+        .tag-bbp { background: #1a2a3a; color: #4db8ff; border: 1px solid #4db8ff33; }
+        .tag-bb { background: #2a1a1a; color: #ff6b6b; border: 1px solid #ff6b6b33; }
+        .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 700; }
+        .metric-bar { height: 3px; border-radius: 2px; background: #0d1829; overflow: hidden; }
+        .metric-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .weight-row:hover { background: #0d1829; }
+        select { background: #0d1829; color: #c8d6e5; border: 1px solid #1e3a5f; border-radius: 4px; padding: 4px 8px; font-family: inherit; font-size: 11px; cursor: pointer; outline: none; }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ background: "linear-gradient(135deg, #0d1829 0%, #0a1525 100%)", borderBottom: "1px solid #1e3a5f", padding: "20px 28px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+          <div>
+            <div style={{ fontSize: "10px", letterSpacing: "0.3em", color: "#4db8ff", marginBottom: "4px", textTransform: "uppercase" }}>Risk-Adjusted Bond Scorer</div>
+            <div style={{ fontSize: "22px", fontWeight: "700", color: "#ffffff", letterSpacing: "-0.02em" }}>BB — BBB<span style={{ color: "#00e5a0" }}>-</span> Universe</div>
+            <div style={{ fontSize: "11px", color: "#5a7a9a", marginTop: "4px" }}>{RAW_DATA.length} bonds · EUR denominated · Weighted composite scoring</div>
+          </div>
+          <div style={{ display: "flex", gap: "16px" }}>
+            {["ALL", "BBB-", "BB+", "BB"].map(r => (
+              <button key={r} onClick={() => setFilterRating(r)} style={{ background: filterRating === r ? "#1e3a5f" : "transparent", border: `1px solid ${filterRating === r ? "#4db8ff" : "#1e3a5f"}`, color: filterRating === r ? "#4db8ff" : "#5a7a9a", borderRadius: "4px", padding: "5px 14px", fontSize: "11px", fontFamily: "inherit", cursor: "pointer", fontWeight: filterRating === r ? "600" : "400", letterSpacing: "0.05em" }}>
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "0", minHeight: "calc(100vh - 80px)" }}>
+
+        {/* Left Panel - Weights */}
+        <div style={{ background: "#0d1420", borderRight: "1px solid #1e3a5f", padding: "20px" }}>
+          <div style={{ fontSize: "9px", letterSpacing: "0.3em", color: "#4db8ff", marginBottom: "16px", textTransform: "uppercase" }}>Scoring Weights</div>
+
+          <div style={{ background: "#0a0e1a", border: "1px solid #1e3a5f", borderRadius: "6px", padding: "12px", marginBottom: "16px" }}>
+            <div style={{ fontSize: "9px", color: "#5a7a9a", letterSpacing: "0.1em", marginBottom: "4px" }}>TOTAL WEIGHT ALLOCATED</div>
+            <div style={{ fontSize: "24px", fontWeight: "700", color: totalWeight === 100 ? "#00e5a0" : "#ff6b6b" }}>{totalWeight}<span style={{ fontSize: "14px", color: "#5a7a9a" }}>/ 100</span></div>
+            {totalWeight !== 100 && <div style={{ fontSize: "10px", color: "#ff6b6b", marginTop: "4px" }}>⚠ Weights should sum to 100</div>}
+          </div>
+
+          {Object.entries(METRIC_INFO).map(([key, info]) => (
+            <div key={key} className="weight-row" style={{ padding: "10px 8px", borderRadius: "4px", marginBottom: "4px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <div>
+                  <div style={{ fontSize: "11px", color: "#c8d6e5", fontWeight: "500" }}>{info.label}</div>
+                  <div style={{ fontSize: "9px", color: "#3a5a7a", marginTop: "1px" }}>{info.direction === "higher_better" ? "↑ higher = better" : "↓ lower = better"}</div>
+                </div>
+                <div style={{ fontSize: "16px", fontWeight: "700", color: "#4db8ff", minWidth: "36px", textAlign: "right" }}>{weights[key]}</div>
+              </div>
+              <input type="range" min="0" max="50" value={weights[key]}
+                onChange={e => setWeights(w => ({ ...w, [key]: parseInt(e.target.value) }))}
+                style={{ width: "100%", accentColor: "#4db8ff", background: `linear-gradient(to right, #1e3a5f ${weights[key] * 2}%, #0a0e1a ${weights[key] * 2}%)` }}
+              />
+              <div style={{ fontSize: "9px", color: "#3a5a7a", marginTop: "3px" }}>{info.description}</div>
+            </div>
+          ))}
+
+          <button onClick={() => setWeights(DEFAULT_WEIGHTS)} style={{ width: "100%", marginTop: "12px", background: "transparent", border: "1px solid #1e3a5f", color: "#5a7a9a", borderRadius: "4px", padding: "8px", fontSize: "10px", fontFamily: "inherit", cursor: "pointer", letterSpacing: "0.1em" }}>
+            RESET TO DEFAULT
+          </button>
+
+          {/* Formula Box */}
+          <div style={{ marginTop: "20px", background: "#0a0e1a", border: "1px solid #1e3a5f", borderRadius: "6px", padding: "12px" }}>
+            <div style={{ fontSize: "9px", letterSpacing: "0.2em", color: "#4db8ff", marginBottom: "8px" }}>SCORING FORMULA</div>
+            <div style={{ fontSize: "9px", color: "#5a7a9a", lineHeight: "1.8" }}>
+              <div style={{ color: "#00e5a0", marginBottom: "4px" }}>Score = Σ (wᵢ × Nᵢ)</div>
+              {Object.entries(METRIC_INFO).map(([key, info]) => (
+                <div key={key}>w<sub>{key.slice(0,3)}</sub> = {weights[key]}% · N({info.label.split(" ")[0]})</div>
+              ))}
+              <div style={{ marginTop: "6px", color: "#3a5a7a" }}>Nᵢ = min-max normalized [0,1]<br />Direction-adjusted per metric</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel - Results */}
+        <div style={{ padding: "20px", overflowX: "auto" }}>
+
+          {/* Top Pick Card */}
+          {top && (
+            <div style={{ background: "linear-gradient(135deg, #0d2218 0%, #0a1a14 100%)", border: "1px solid #00e5a044", borderRadius: "8px", padding: "16px 20px", marginBottom: "20px", display: "flex", gap: "24px", flexWrap: "wrap", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: "9px", letterSpacing: "0.3em", color: "#00e5a0", marginBottom: "4px" }}>🏆 TOP RISK-ADJUSTED PICK</div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: "#ffffff" }}>{top.issuer}</div>
+                <div style={{ fontSize: "11px", color: "#5a7a9a", marginTop: "2px" }}>{top.isin} · {top.industry}</div>
+              </div>
+              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+                {[
+                  { l: "Score", v: top.score.toFixed(1), unit: "/100", color: "#00e5a0" },
+                  { l: "Yield", v: top.yieldAsk.toFixed(3), unit: "%", color: "#4db8ff" },
+                  { l: "G-Spread", v: top.gSpread.toFixed(0), unit: "bps", color: "#f5c518" },
+                  { l: "Net Debt/EBITDA", v: top.netDebtEbitda.toFixed(2), unit: "x", color: "#c8d6e5" },
+                  { l: "Default Prob", v: top.defaultProb.toFixed(4), unit: "%", color: "#ff8c42" },
+                ].map(({ l, v, unit, color }) => (
+                  <div key={l} style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "18px", fontWeight: "700", color }}>{v}<span style={{ fontSize: "11px", color: "#5a7a9a" }}>{unit}</span></div>
+                    <div style={{ fontSize: "9px", color: "#3a5a7a", letterSpacing: "0.1em" }}>{l.toUpperCase()}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Controls */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+            <div style={{ fontSize: "9px", color: "#5a7a9a", letterSpacing: "0.2em" }}>SHOWING {displayed.length} OF {filtered.length} BONDS</div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span style={{ fontSize: "10px", color: "#5a7a9a" }}>SORT:</span>
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                <option value="score">Composite Score</option>
+                <option value="gSpread">G-Spread</option>
+                <option value="defaultProb">Default Prob</option>
+                <option value="yieldAsk">Yield</option>
+              </select>
+              <span style={{ fontSize: "10px", color: "#5a7a9a" }}>SHOW:</span>
+              <select value={showTop} onChange={e => setShowTop(parseInt(e.target.value))}>
+                <option value={10}>Top 10</option>
+                <option value={20}>Top 20</option>
+                <option value={filtered.length}>All</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+              <thead>
+                <tr style={{ background: "#0d1829", borderBottom: "1px solid #1e3a5f" }}>
+                  {["#", "Issuer", "Rating", "Score", "G-Spread", "Yield", "Net Debt/EBITDA", "Int. Coverage", "Default Prob", "FCF/Debt", "Rank"].map(h => (
+                    <th key={h} style={{ padding: "8px 10px", textAlign: "left", fontSize: "9px", color: "#3a5a7a", letterSpacing: "0.1em", fontWeight: "600", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {displayed.map((bond, idx) => {
+                  const ratingClass = bond.rating === "BBB-" ? "tag-bbb" : bond.rating === "BB+" ? "tag-bbp" : "tag-bb";
+                  const scoreColor = getScoreColor(bond.score);
+                  const rankBg = idx === 0 ? "#1a3a1a" : idx === 1 ? "#1a2a3a" : idx === 2 ? "#2a1a0a" : "#0d1829";
+                  const rankColor = idx === 0 ? "#00e5a0" : idx === 1 ? "#c0c0c0" : idx === 2 ? "#cd7f32" : "#3a5a7a";
+
+                  return (
+                    <tr key={bond.isin} className="bond-row" style={{ borderBottom: "1px solid #0d1829", background: idx % 2 === 0 ? "#0a0e1a" : "#0c1220", cursor: "default" }}>
+                      <td style={{ padding: "9px 10px" }}>
+                        <span className="rank-badge" style={{ background: rankBg, color: rankColor }}>{idx + 1}</span>
+                      </td>
+                      <td style={{ padding: "9px 10px", maxWidth: "180px" }}>
+                        <div style={{ fontWeight: "500", color: "#c8d6e5", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{bond.issuer}</div>
+                        <div style={{ fontSize: "9px", color: "#3a5a7a", marginTop: "1px" }}>{bond.isin}</div>
+                      </td>
+                      <td style={{ padding: "9px 10px" }}><span className={`pill ${ratingClass}`}>{bond.rating}</span></td>
+                      <td style={{ padding: "9px 10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontWeight: "700", color: scoreColor, fontSize: "13px" }}>{bond.score.toFixed(1)}</span>
+                          <div style={{ width: "50px" }}>
+                            <div className="metric-bar"><div className="metric-fill" style={{ width: `${bond.score}%`, background: scoreColor }} /></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: "9px 10px", color: "#f5c518", fontWeight: "500" }}>{bond.gSpread.toFixed(0)}<span style={{ fontSize: "9px", color: "#5a7a9a" }}>bp</span></td>
+                      <td style={{ padding: "9px 10px", color: "#4db8ff" }}>{bond.yieldAsk.toFixed(3)}<span style={{ fontSize: "9px", color: "#5a7a9a" }}>%</span></td>
+                      <td style={{ padding: "9px 10px", color: bond.netDebtEbitda > 5 ? "#ff6b6b" : bond.netDebtEbitda > 3 ? "#f5c518" : "#00e5a0" }}>{bond.netDebtEbitda.toFixed(2)}x</td>
+                      <td style={{ padding: "9px 10px", color: bond.interestCoverage === null ? "#3a5a7a" : bond.interestCoverage < 2 ? "#ff6b6b" : bond.interestCoverage < 4 ? "#f5c518" : "#00e5a0" }}>{bond.interestCoverage !== null ? bond.interestCoverage.toFixed(2) + "x" : "—"}</td>
+                      <td style={{ padding: "9px 10px", color: bond.defaultProb > 1 ? "#ff6b6b" : bond.defaultProb > 0.5 ? "#f5c518" : "#00e5a0" }}>{bond.defaultProb.toFixed(4)}<span style={{ fontSize: "9px", color: "#5a7a9a" }}>%</span></td>
+                      <td style={{ padding: "9px 10px", color: bond.fcfDebt === null ? "#3a5a7a" : bond.fcfDebt < 0 ? "#ff6b6b" : "#00e5a0" }}>{bond.fcfDebt !== null ? (bond.fcfDebt * 100).toFixed(1) + "%" : "—"}</td>
+                      <td style={{ padding: "9px 10px" }}><span style={{ fontSize: "9px", color: "#5a7a9a", whiteSpace: "nowrap" }}>{bond.paymentRank}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Legend */}
+          <div style={{ marginTop: "16px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+            {[{ color: "#00e5a0", label: "Score ≥ 65 (Strong)" }, { color: "#f5c518", label: "Score 50–65 (Moderate)" }, { color: "#ff8c42", label: "Score 35–50 (Weak)" }, { color: "#ff4444", label: "Score < 35 (Poor)" }].map(({ color, label }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: color }} />
+                <span style={{ fontSize: "9px", color: "#5a7a9a" }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
